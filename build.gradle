@@ -1,0 +1,41 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.21'
+    id 'org.jetbrains.intellij' version '0.4.2'
+}
+
+group 'com.pandora.plugin'
+version '0.3'
+
+patchPluginXml {
+    changeNotes """
+    <ul>
+      <li>0.1: Initial version of the Multiple File Kotlin Converter plugin for IntelliJ IDEA.</li>
+      <li>0.2: Fixing small issues found in testing with cancellation and layout.</li>
+      <li>0.3: Save commit message during a single session.</li>
+    </ul>
+    """
+}
+
+intellij {
+    version '2017.1'
+    updateSinceUntilBuild false
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+}
+
+publishPlugin {
+    token project.properties['jetbrains.publish.token']
+}
