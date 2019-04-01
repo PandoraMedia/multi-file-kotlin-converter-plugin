@@ -13,7 +13,7 @@ All conversions also include an optional step to perform an in-place renaming of
 
 # How to install?
 
-The plugin is published under the *JetBrains Plugins Repository* (see [here](https://plugins.jetbrains.com/plugins/))
+The plugin is published under the *JetBrains Plugins Repository* (see [here](https://plugins.jetbrains.com/plugin/12183-multiple-file-kotlin-converter/))
 and can be installed following these simple steps:
 
 1. Open __Settings__ menu (`Ctrl Alt S`). 
