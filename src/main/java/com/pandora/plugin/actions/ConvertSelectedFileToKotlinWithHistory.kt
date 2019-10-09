@@ -16,6 +16,7 @@
 package com.pandora.plugin.actions
 
 import com.intellij.openapi.actionSystem.*
+import com.intellij.project.guessProjectDir
 import com.pandora.plugin.CONVERT_JAVA_TO_KOTLIN_PLUGIN_ID
 import com.pandora.plugin.anyJavaFileSelected
 import com.pandora.plugin.logger
@@ -24,7 +25,7 @@ import com.pandora.plugin.writeCommitHistory
 class ConvertSelectedFileToKotlinWithHistory : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val projectBase = project.baseDir
+        val projectBase = project.guessProjectDir()
 
         try {
             val fileArray = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)

@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
+import com.intellij.project.guessProjectDir
 import com.pandora.plugin.CONVERT_JAVA_TO_KOTLIN_PLUGIN_ID
 import com.pandora.plugin.JAVA_EXTENSION
 import com.pandora.plugin.logger
@@ -45,7 +46,7 @@ class ConvertListOfFilesToKotlinWithHistory : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
 
         val project = e.project ?: return
-        val projectBase = project.baseDir
+        val projectBase = project.guessProjectDir()
 
         try {
             val dialogResult = MultiFileFinderDialog.showInputDialogWithCheckBox("Enter files to convert: (newline separated)", "Files to convert", "Automatically rename files in VCS", true, true, null, "", null)
@@ -59,7 +60,7 @@ class ConvertListOfFilesToKotlinWithHistory : AnAction() {
             }
 
             //dialogResult.second is the commit checkbox
-            if (dialogResult.second &&!writeCommitHistory(project, projectBase, fileArray)) {
+            if (dialogResult.second && !writeCommitHistory(project, projectBase, fileArray)) {
                 return
             }
 
