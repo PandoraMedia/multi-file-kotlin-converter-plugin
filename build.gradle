@@ -10,7 +10,7 @@ plugins {
 }
 
 group 'com.pandora.plugin'
-version '0.3'
+version '0.4.1'
 
 patchPluginXml {
     changeNotes """
@@ -18,6 +18,7 @@ patchPluginXml {
       <li>0.1: Initial version of the Multiple File Kotlin Converter plugin for IntelliJ IDEA.</li>
       <li>0.2: Fixing small issues found in testing with cancellation and layout.</li>
       <li>0.3: Save commit message during a single session.</li>
+      <li>0.4: Fix Deprecated project root usage.</li>
     </ul>
     """
 }
