@@ -93,7 +93,7 @@ class SearchAndConvertFilesToKotlinWithHistory : AnAction() {
 
     private fun regexVerify(projectBase: VirtualFile, regex: String?): Array<VirtualFile>? {
         if (regex == null) return null
-        val r = Regex.fromLiteral(regex)
+        val r = Regex(regex)
         return findMatchingChildren(projectBase) { file -> r.containsMatchIn(file.name) }
     }
 

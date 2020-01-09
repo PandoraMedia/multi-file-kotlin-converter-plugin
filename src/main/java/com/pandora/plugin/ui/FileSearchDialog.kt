@@ -16,25 +16,17 @@
 package com.pandora.plugin.ui
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.*
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.MultiLineLabelUI
+import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.SystemInfo
 import com.pandora.plugin.options.IntComparison
 import com.pandora.plugin.options.PanelOption
 import com.pandora.plugin.options.SearchOptions
 import org.jetbrains.annotations.Nls
-import org.jetbrains.annotations.NonNls
-import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.GridBagLayout
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
 import javax.swing.*
-import javax.swing.text.DocumentFilter
-import javax.swing.text.PlainDocument
-import javax.swing.text.NumberFormatter
-import java.text.NumberFormat
-
-
 
 class FileSearchDialog(project: Project,
                        private val message: String,
@@ -73,7 +65,7 @@ class FileSearchDialog(project: Project,
 
     private fun createTextComponent(str: String): JComponent {
         val textLabel = JLabel(str)
-        textLabel.ui = MultiLineLabelUI()
+        textLabel.setUI(MultiLineLabelUI())
         textLabel.border = BorderFactory.createEmptyBorder(0, 0, 5, 0)
         return textLabel
     }
@@ -84,7 +76,7 @@ class FileSearchDialog(project: Project,
         messagePanel.add(createTextComponent(message))
         val regexPanel = JPanel(GridBagLayout())
         regexCheckBox = JCheckBox()
-        regexCheckBox.text = "Regex"
+        regexCheckBox.text = "Regex (extensions allowed, not full filepath)"
         regexCheckBox.isSelected = lastRegexUsed
         regexCheckBox.isEnabled = true
         regexPanel.add(regexCheckBox, PanelOption.WRAP.constraints)
