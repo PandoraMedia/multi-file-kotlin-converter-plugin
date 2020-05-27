@@ -20,14 +20,20 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.ui.ScrollPaneFactory
+import com.pandora.plugin.DIALOG_SIZE
 import org.jetbrains.annotations.Nls
 import java.awt.Dimension
-import javax.swing.*
+import javax.swing.JCheckBox
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.SwingConstants
 
-class MultiCheckboxDialog(vararg items: Any,
-                          project: Project,
-                          @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                          private val itemFormatter: (Any) -> String
+class MultiCheckboxDialog(
+    items: Array<out Any>,
+    project: Project,
+    @Nls(capitalization = Nls.Capitalization.Title) title: String,
+    private val itemFormatter: (Any) -> String
 ) : DialogWrapper(project) {
     private var checkBoxes = HashMap<Any, JCheckBox>()
 
@@ -46,34 +52,36 @@ class MultiCheckboxDialog(vararg items: Any,
 
     override fun createCenterPanel(): JComponent? {
         val messagePanel = JPanel(VerticalFlowLayout(VerticalFlowLayout.TOP or VerticalFlowLayout.LEFT, true, false))
-        messagePanel.maximumSize = Dimension(500, 500)
+        messagePanel.maximumSize = Dimension(DIALOG_SIZE, DIALOG_SIZE)
 
-        if (allItems.count() > maxFiles) {
-            messagePanel.add(JTextField("WARNING: Converting more than $maxFiles can cause unpredictable results"))
+        if (allItems.count() > MAX_FILES) {
+            messagePanel.add(JTextField("WARNING: Converting more than $MAX_FILES can cause unpredictable results"))
         }
 
         var i = 0
         allItems.forEach {
-            val checkBox = JCheckBox()
-            checkBox.isSelected = i < maxFiles
-            checkBox.isEnabled = true
-            checkBox.text = itemFormatter.invoke(it)
-            checkBoxes[it] = checkBox
-
-            messagePanel.add(checkBox, i++)
+            JCheckBox().apply {
+                isSelected = i < MAX_FILES
+                isEnabled = true
+                text = itemFormatter.invoke(it)
+                checkBoxes[it] = this
+                messagePanel.add(this, i++)
+            }
         }
         return ScrollPaneFactory.createScrollPane(messagePanel)
     }
 
     companion object {
-        private const val maxFiles = 15 //Above this the IntelliJ convert plugin gets flaky.
+        private const val MAX_FILES = 15 // Above this the IntelliJ convert plugin gets flaky.
 
-        fun showMultiCheckboxDialog(vararg items: Any,
-                                    project: Project,
-                                    @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                                    itemFormatter: (Any) -> String = { "$it" }): List<Any> {
+        fun showMultiCheckboxDialog(
+            items: Array<out Any>,
+            project: Project,
+            @Nls(capitalization = Nls.Capitalization.Title) title: String,
+            itemFormatter: (Any) -> String = { "$it" }
+        ): List<Any> {
             val dialog = MultiCheckboxDialog(
-                    *items,
+                    items,
                     project = project,
                     title = title,
                     itemFormatter = itemFormatter)

@@ -15,8 +15,12 @@
  */
 package com.pandora.plugin.actions
 
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.pandora.plugin.CONVERT_JAVA_TO_KOTLIN_PLUGIN_ID
+import com.pandora.plugin.ConversionException
 import com.pandora.plugin.anyJavaFileSelected
 import com.pandora.plugin.logger
 import com.pandora.plugin.writeCommitHistory
@@ -27,28 +31,30 @@ class ConvertSelectedFileToKotlinWithHistory : AnAction() {
         val projectBase = project.baseDir
 
         try {
-            val fileArray = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-            if (fileArray == null || fileArray.isEmpty()) {
-                logger.info("No files selected.")
-                return
-            } else {
-                fileArray.forEach { logger.info("Preparing to convert file: $it") }
-            }
+            val fileArray = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: emptyArray()
+            fileArray.forEach { logger.info("Preparing to convert file: $it") }
 
-            if (!writeCommitHistory(project, projectBase, fileArray)) {
+            if (fileArray.isEmpty() || !writeCommitHistory(project, projectBase, fileArray)) {
                 return
             }
 
-            val dataContext = DataContext { data ->
-                when (data) {
-                    PlatformDataKeys.VIRTUAL_FILE_ARRAY.name -> fileArray
-                    else -> e.dataContext.getData(data)
-                }
-            }
-            val overrideEvent = AnActionEvent(e.inputEvent, dataContext, e.place, e.presentation, e.actionManager, e.modifiers)
+            val overrideEvent = AnActionEvent(
+                    e.inputEvent,
+                    e.dataContext(fileArray),
+                    e.place,
+                    e.presentation,
+                    e.actionManager,
+                    e.modifiers
+            )
             ActionManager.getInstance().getAction(CONVERT_JAVA_TO_KOTLIN_PLUGIN_ID)?.actionPerformed(overrideEvent)
-        } catch (e: Exception) {
-            logger.error("Problem running conversion plugin: ${e.message}\n${e.stackTrace.joinToString("\n")}\n----------")
+        } catch (e: ConversionException) {
+            if (e.isError) {
+                logger.error("Problem running conversion plugin: ${e.message}\n" +
+                        "${e.stackTrace.joinToString("\n")}\n" +
+                        "----------")
+            } else {
+                logger.info(e.message, e.cause)
+            }
         }
     }
 

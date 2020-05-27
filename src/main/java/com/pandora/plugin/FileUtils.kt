@@ -46,15 +46,28 @@ const val JAVA_EXTENSION = "java"
 
 private var lastCommitMessage = SUGGESTED_COMMIT_MESSAGE
 
-fun AnAction.writeCommitHistory(project: Project, projectBase: VirtualFile, files: Array<VirtualFile>): Boolean {
+internal const val DIALOG_SIZE = 500
 
-    val commitMessage = Messages.showInputDialog(project, "Commit Message for Conversion:", "Enter a commit message", null, lastCommitMessage, null)
+internal fun AnAction.writeCommitHistory(
+    project: Project,
+    projectBase: VirtualFile,
+    files: Array<VirtualFile>
+): Boolean {
+    val commitMessage = Messages.showInputDialog(
+            project,
+            "Commit Message for Conversion:",
+            "Enter a commit message",
+            null,
+            lastCommitMessage,
+            null
+    )
     if (commitMessage.isNullOrBlank()) {
-        return false
+        throw ConversionException("Commit Message cannot be empty")
     }
     lastCommitMessage = commitMessage!!
 
-    val finalVcs = VcsUtil.getVcsFor(project, projectBase) ?: return false
+    val finalVcs = VcsUtil.getVcsFor(project, projectBase)
+            ?: throw ConversionException("Unable to find Version Control for selected project")
     val changes = files.mapNotNull {
         logger.info("File $it has extension: ${it.extension}")
         if (it.extension != JAVA_EXTENSION) return@mapNotNull null
@@ -65,48 +78,44 @@ fun AnAction.writeCommitHistory(project: Project, projectBase: VirtualFile, file
         logger.info("Renamed file ${before.file} -> ${after.file}")
         Change(before, after)
     }.toList()
-    if (changes.isNotEmpty()) {
+    return if (changes.isNotEmpty()) {
         finalVcs.checkinEnvironment?.commit(changes, commitMessage)
+        files.filter { it.extension == KOTLIN_EXTENSION }.forEach {
+            renameFile(project, it, "${it.nameWithoutExtension}.$JAVA_EXTENSION")
+        }
+        true
     } else {
         Messages.showDialog("No files found to commit.", "Nothing to commit", emptyArray(), 0, null)
-        logger.info("Cannot commit an empty set of files.")
-        return false
+        false
     }
-    files.forEach {
-        if (it.extension != KOTLIN_EXTENSION) return@forEach
-        renameFile(project, it, "${it.nameWithoutExtension}.$JAVA_EXTENSION")
-    }
-    return true
 }
 
-fun AnAction.renameFile(project: Project, virtualFile: VirtualFile, newName: String) {
-
+internal fun AnAction.renameFile(project: Project, virtualFile: VirtualFile, newName: String) {
     logger.info("Renaming file `${virtualFile.name}` to `$newName`")
 
     WriteCommandAction.runWriteCommandAction(project) {
         try {
             virtualFile.rename(this, newName)
         } catch (e: IOException) {
-            throw RuntimeException("Error while renaming file `${virtualFile.name}` to `$newName`", e)
+            throw ConversionException("Error while renaming file `${virtualFile.name}` to `$newName`", true, e)
         }
     }
 }
 
-fun VirtualFile.contentRevision(): CurrentContentRevision {
+internal fun VirtualFile.contentRevision(): CurrentContentRevision {
     val contextFactory = VcsContextFactory.SERVICE.getInstance()
     val path = contextFactory.createFilePathOn(this)
     return CurrentContentRevision(path)
 }
 
-fun AnActionEvent.anyJavaFileSelected(): Boolean {
-    val project = project ?: return false
-    val files = getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return false
-    return anyJavaFileSelected(project, files)
+internal fun AnActionEvent.anyJavaFileSelected(): Boolean {
+    val projectRef = project
+    val files = getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
+    return projectRef != null && files != null && anyJavaFileSelected(projectRef, files)
 }
 
 private fun anyJavaFileSelected(project: Project, files: Array<out VirtualFile>): Boolean {
     val manager = PsiManager.getInstance(project)
-    if (files.any { manager.findFile(it) is PsiJavaFile && it.isWritable }) return true
-    return files.any { it.isDirectory && anyJavaFileSelected(project, it.children) }
+    return files.any { manager.findFile(it) is PsiJavaFile && it.isWritable } ||
+            files.any { it.isDirectory && anyJavaFileSelected(project, it.children) }
 }
-
