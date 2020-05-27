@@ -17,7 +17,6 @@ package com.pandora.plugin.ui
 
 import com.intellij.openapi.ui.InputValidator
 import com.intellij.openapi.ui.Messages
-import org.jetbrains.annotations.Nls
 import org.jetbrains.annotations.NonNls
 import java.awt.BorderLayout
 import javax.swing.Icon
@@ -25,26 +24,24 @@ import javax.swing.JCheckBox
 import javax.swing.JPanel
 import javax.swing.JTextArea
 
-class MultiFileFinderDialog(message: String,
-                            @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                            checkboxText: String,
-                            checked: Boolean,
-                            checkboxEnabled: Boolean,
-                            icon: Icon?,
-                            initialValue: String?,
-                            validator: InputValidator? = null
-) : Messages.InputDialog(message, title, icon, initialValue, validator) {
+class MultiFileFinderDialog(
+    searchDialog: SearchDialog,
+    icon: Icon?,
+    initialValue: String?,
+    validator: InputValidator? = null
+) : Messages.InputDialog(searchDialog.message, searchDialog.title, icon, initialValue, validator) {
     private lateinit var checkBox: JCheckBox
 
     val isChecked: Boolean?
         get() = checkBox.isSelected
 
     init {
-        checkBox.text = checkboxText
-        checkBox.isSelected = checked
-        checkBox.isEnabled = checkboxEnabled
+        checkBox.text = searchDialog.checkboxText
+        checkBox.isSelected = searchDialog.checked
+        checkBox.isEnabled = searchDialog.checkboxEnabled
     }
 
+    @Suppress("MagicNumber") // Not a critical number to extract
     override fun createTextFieldComponent() = JTextArea(7, 50)
 
     override fun createMessagePanel(): JPanel {
@@ -64,20 +61,14 @@ class MultiFileFinderDialog(message: String,
     }
 
     companion object {
-        fun showInputDialogWithCheckBox(message: String,
-                                        @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                                        checkboxText: String,
-                                        checked: Boolean,
-                                        checkboxEnabled: Boolean,
-                                        icon: Icon?,
-                                        @NonNls initialValue: String,
-                                        validator: InputValidator?): Pair<String, Boolean> {
+        fun showInputDialogWithCheckBox(
+            searchDialog: SearchDialog,
+            icon: Icon?,
+            @NonNls initialValue: String,
+            validator: InputValidator?
+        ): Pair<String, Boolean> {
             val dialog = MultiFileFinderDialog(
-                    message = message,
-                    title = title,
-                    checkboxText = checkboxText,
-                    checked = checked,
-                    checkboxEnabled = checkboxEnabled,
+                    searchDialog = searchDialog,
                     icon = icon,
                     initialValue = initialValue,
                     validator = validator)

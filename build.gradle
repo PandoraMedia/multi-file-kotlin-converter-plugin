@@ -1,16 +1,18 @@
 buildscript {
     repositories {
         mavenCentral()
+        jcenter()
     }
 }
 
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.3.72'
     id 'org.jetbrains.intellij' version '0.4.21'
+    id "io.gitlab.arturbosch.detekt" version "1.9.1"
 }
 
 group 'com.pandora.plugin'
-version '0.4.2'
+version '0.4.3'
 
 patchPluginXml {
     changeNotes """
@@ -24,13 +26,14 @@ patchPluginXml {
 }
 
 intellij {
-    version '2017.1'
+    version '2017.2'
     updateSinceUntilBuild false
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
+    jcenter()
 }
 
 dependencies {
@@ -39,4 +42,18 @@ dependencies {
 
 publishPlugin {
     token project.properties['jetbrains.publish.token']
+}
+
+apply plugin: 'io.gitlab.arturbosch.detekt'
+
+tasks.detekt.jvmTarget = "1.8"
+
+detekt {
+    parallel = true
+    buildUponDefaultConfig = true
+    input = files("$projectDir")
+}
+
+dependencies {
+    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:1.9.1"
 }

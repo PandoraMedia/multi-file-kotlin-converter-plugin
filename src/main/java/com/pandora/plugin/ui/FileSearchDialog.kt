@@ -16,32 +16,31 @@
 package com.pandora.plugin.ui
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.*
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.MultiLineLabelUI
+import com.intellij.openapi.ui.VerticalFlowLayout
 import com.intellij.openapi.util.SystemInfo
 import com.pandora.plugin.options.IntComparison
 import com.pandora.plugin.options.PanelOption
 import com.pandora.plugin.options.SearchOptions
 import org.jetbrains.annotations.Nls
-import org.jetbrains.annotations.NonNls
-import java.awt.Dimension
-import java.awt.FlowLayout
 import java.awt.GridBagLayout
-import java.awt.event.KeyEvent
-import java.awt.event.KeyListener
-import javax.swing.*
-import javax.swing.text.DocumentFilter
-import javax.swing.text.PlainDocument
-import javax.swing.text.NumberFormatter
-import java.text.NumberFormat
+import javax.swing.BorderFactory
+import javax.swing.JCheckBox
+import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JPanel
+import javax.swing.JTextField
+import javax.swing.SwingConstants
 
-
-
-class FileSearchDialog(project: Project,
-                       private val message: String,
-                       @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                       val checkboxText: String,
-                       val checked: Boolean,
-                       val checkboxEnabled: Boolean
+class FileSearchDialog(
+    project: Project,
+    private val message: String,
+    @Nls(capitalization = Nls.Capitalization.Title) title: String,
+    val checkboxText: String,
+    val checked: Boolean,
+    val checkboxEnabled: Boolean
 ) : DialogWrapper(project) {
     private lateinit var commitCheckBox: JCheckBox
     private lateinit var regexCheckBox: JCheckBox
@@ -69,8 +68,13 @@ class FileSearchDialog(project: Project,
         get() = (if (lineCountCheckBox.isSelected) lineCountInput.selectedItem as Int? else null) ?: -1
 
     private val lineCountFunction: (Int, Int) -> Boolean
-        get() = if (lineCountCheckBox.isSelected) (lineCountCombo.selectedItem as IntComparison).function else { _, _ -> true }
+        get() = if (lineCountCheckBox.isSelected) {
+            (lineCountCombo.selectedItem as IntComparison).function
+        } else {
+            { _, _ -> true }
+        }
 
+    @Suppress("MagicNumber") // Bottom padding is just a nudge
     private fun createTextComponent(str: String): JComponent {
         val textLabel = JLabel(str)
         textLabel.ui = MultiLineLabelUI()
@@ -105,7 +109,7 @@ class FileSearchDialog(project: Project,
         lineCountCombo.selectedItem = lastSizeType
         lineCountPanel.add(lineCountCombo, PanelOption.WRAP.constraints)
 
-        lineCountInput = ComboBox((0..10000).toList().toTypedArray())
+        lineCountInput = ComboBox((0..MAX_LINES).toList().toTypedArray())
         lineCountInput.selectedItem = lastSize
         lineCountPanel.add(lineCountInput, PanelOption.FILL.constraints)
 
@@ -121,27 +125,22 @@ class FileSearchDialog(project: Project,
         return messagePanel
     }
 
-
     companion object {
+        private const val MAX_LINES = 10_000
         private var lastRegexUsed: Boolean = false
         private var lastRegex: String = ""
         private var lastSizeUsed: Boolean = false
         private var lastSize: Int = 0
         private var lastSizeType: IntComparison = IntComparison.LESS_THAN
 
-        fun showSearchDialog(project: Project,
-                             message: String,
-                             @Nls(capitalization = Nls.Capitalization.Title) title: String,
-                             checkboxText: String,
-                             checked: Boolean,
-                             checkboxEnabled: Boolean): SearchOptions? {
+        fun showSearchDialog(project: Project, searchDialog: SearchDialog): SearchOptions? {
             val dialog = FileSearchDialog(
                     project = project,
-                    message = message,
-                    title = title,
-                    checkboxText = checkboxText,
-                    checked = checked,
-                    checkboxEnabled = checkboxEnabled)
+                    message = searchDialog.message,
+                    title = searchDialog.title,
+                    checkboxText = searchDialog.checkboxText,
+                    checked = searchDialog.checked,
+                    checkboxEnabled = searchDialog.checkboxEnabled)
             dialog.show()
             lastRegexUsed = dialog.regexCheckBox.isSelected
             lastRegex = dialog.regexInput.text
@@ -149,7 +148,11 @@ class FileSearchDialog(project: Project,
             lastSize = dialog.lineCountInput.selectedItem as Int? ?: -1
             lastSizeType = dialog.lineCountCombo.selectedItem as IntComparison
 
-            return if (dialog.isOK) SearchOptions(dialog.commit, dialog.regexText, dialog.lineCount, dialog.lineCountFunction) else null
+            return if (dialog.isOK) {
+                SearchOptions(dialog.commit, dialog.regexText, dialog.lineCount, dialog.lineCountFunction)
+            } else {
+                null
+            }
         }
     }
 }
