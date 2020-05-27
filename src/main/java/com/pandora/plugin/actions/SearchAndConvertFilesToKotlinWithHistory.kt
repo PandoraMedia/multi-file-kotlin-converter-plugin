@@ -22,7 +22,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileVisitor
-import com.intellij.project.guessProjectDir
 import com.pandora.plugin.CONVERT_JAVA_TO_KOTLIN_PLUGIN_ID
 import com.pandora.plugin.JAVA_EXTENSION
 import com.pandora.plugin.logger
@@ -52,7 +51,7 @@ class SearchAndConvertFilesToKotlinWithHistory : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
 
         val project = e.project ?: return
-        val projectBase = project.guessProjectDir()
+        val projectBase = project.baseDir
 
         try {
             val dialogResult = FileSearchDialog.showSearchDialog(project, "How to search for files:", "Search", "Automatically rename files in VCS", true, true)

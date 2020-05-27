@@ -17,7 +17,7 @@
     <id>com.pandora.plugins.kotlin_converter</id>
     <name>Multiple File Kotlin Converter</name>
     <vendor url="http://www.pandora.com">Pandora Media, Inc.</vendor>
-    <idea-version since-build="171"/>
+    <idea-version since-build="172"/>
 
     <description><![CDATA[
     This IntelliJ IDEA plugin runs the native <em>Convert Java File To Kotlin File</em> action on multiple files
@@ -27,6 +27,7 @@
          on how to target different products -->
     <!-- enable plugin in all products -->
     <depends>com.intellij.modules.lang</depends>
+    <depends>com.intellij.modules.java</depends> <!-- For use of PsiJavaFile -->
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
