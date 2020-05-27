@@ -77,7 +77,7 @@ class FileSearchDialog(
     @Suppress("MagicNumber") // Bottom padding is just a nudge
     private fun createTextComponent(str: String): JComponent {
         val textLabel = JLabel(str)
-        textLabel.ui = MultiLineLabelUI()
+        textLabel.setUI(MultiLineLabelUI())
         textLabel.border = BorderFactory.createEmptyBorder(0, 0, 5, 0)
         return textLabel
     }
@@ -88,7 +88,7 @@ class FileSearchDialog(
         messagePanel.add(createTextComponent(message))
         val regexPanel = JPanel(GridBagLayout())
         regexCheckBox = JCheckBox()
-        regexCheckBox.text = "Regex"
+        regexCheckBox.text = "Regex (extensions allowed, not full filepath)"
         regexCheckBox.isSelected = lastRegexUsed
         regexCheckBox.isEnabled = true
         regexPanel.add(regexCheckBox, PanelOption.WRAP.constraints)
